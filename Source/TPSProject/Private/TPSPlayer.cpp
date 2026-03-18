@@ -10,6 +10,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "TPSProject.h"
+#include "Bullet.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -57,6 +58,31 @@ ATPSPlayer::ATPSPlayer()
 	{
 		imc_TPS = TempIMC.Object;
 	}
+
+	JumpMaxCount = 2;
+
+	// gun mesh
+	gunMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("gunMeshComp"));
+	gunMeshComp->SetupAttachment(GetMesh());
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempGunMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Weapons/GrenadeLauncher/Meshes/SKM_GrenadeLauncher.SKM_GrenadeLauncher'"));
+	if (TempGunMesh.Succeeded())
+	{
+		gunMeshComp->SetSkeletalMesh(TempGunMesh.Object);
+		gunMeshComp->SetRelativeLocation(FVector(-20.000000,10.000000,110.000000));
+	}
+
+	// 총알 로드
+	ConstructorHelpers::FClassFinder<ABullet> TempBullet(TEXT("'/Game/Blueprints/BP_Bullet.BP_Bullet_C'"));
+	if (TempBullet.Succeeded())
+	{
+		bulletFactory = TempBullet.Class;
+	}
+
+	ConstructorHelpers::FObjectFinder<UInputAction> TempFireInput(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_Fire.IA_Fire'"));
+	if (TempFireInput.Succeeded())
+	{
+		ia_Fire = TempFireInput.Object;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -75,31 +101,33 @@ void ATPSPlayer::Tick(float DeltaTime)
 	// 1. 캐릭터가 바라보는 방향
 	// 2. 카메라가 바라보는 방향(컨트롤러)
 	direction = FTransform(GetControlRotation()).TransformVector(direction);
-	
+
+	AddMovementInput(direction);
+	direction = FVector::ZeroVector;
+
 	//				v = v0 + at : 등가속운동
 	// 수직속도 계산 v = v0 + at :
-	zVelocity += gravity * DeltaTime;
-	// 수직이동 P = P0 + vt
-	FHitResult result;
-	SetActorLocation(GetActorLocation() + FVector(0, 0, zVelocity) * speed * DeltaTime, true, &result);
-
-	// 이동하고 싶다. P = P0 + vt : 등속운동
-	FVector P0 = GetActorLocation();
-	FVector vt = direction * speed * DeltaTime;
-	FVector P = P0 + vt;
-	SetActorLocation(P, true);
-
-	// zvelocity 가 언제 0이 되어야 하는가?
-	// 바닥에 있다면 ZVelocity 를 0으로 초기화
-	if (result.IsValidBlockingHit())
-	{
-		zVelocity = 0;
-		currentJumpCount = 0;
-	}
+	// zVelocity += gravity * DeltaTime;
+	// // 수직이동 P = P0 + vt
+	// FHitResult result;
+	// SetActorLocation(GetActorLocation() + FVector(0, 0, zVelocity) * speed * DeltaTime, true, &result);
+	//
+	// // 이동하고 싶다. P = P0 + vt : 등속운동
+	// FVector P0 = GetActorLocation();
+	// FVector vt = direction * speed * DeltaTime;
+	// FVector P = P0 + vt;
+	// SetActorLocation(P, true);
+	//
+	// // zvelocity 가 언제 0이 되어야 하는가?
+	// // 바닥에 있다면 ZVelocity 를 0으로 초기화
+	// if (result.IsValidBlockingHit())
+	// {
+	// 	zVelocity = 0;
+	// 	currentJumpCount = 0;
+	// }
 
 	// 점프 : 사용자가 점프 버튼을 누르면 점프하고 싶다. 최대 점프 횟수만큼 점프 가능
 	
-	direction = FVector::ZeroVector;
 }
 
 // Called to bind functionality to input
@@ -127,20 +155,31 @@ void ATPSPlayer::SetupPlayerInputComponent(
 			playerInput->BindAction(ia_Move, ETriggerEvent::Triggered, this, &ATPSPlayer::PlayerMove);
 			
 			playerInput->BindAction(ia_Jump, ETriggerEvent::Started, this, &ATPSPlayer::PlayerJump);
+			
+			playerInput->BindAction(ia_Fire, ETriggerEvent::Started, this, &ATPSPlayer::PlayerFire);
 		}
 	}
+}
+
+void ATPSPlayer::PlayerFire(const struct FInputActionValue& inputValue)
+{
+	// 총알 발사 처리
+	// fireposition socket transform 값 얻어오기
+	FTransform firePosition = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
+	GetWorld()->SpawnActor<ABullet>(bulletFactory, firePosition);
 }
 
 void ATPSPlayer::PlayerJump(const struct FInputActionValue& inputValue)
 {
 	// 최대 점프 횟수보다 작게 뛰었다면
-	if (currentJumpCount < jumpMax)
-	{
-		// 수직속도를 점프힘으로 설정한다.
-		zVelocity = jumpPower;
-		// 현재 점프 횟수를 늘려준다.
-		currentJumpCount++;
-	}
+	// if (currentJumpCount < jumpMax)
+	// {
+	// 	// 수직속도를 점프힘으로 설정한다.
+	// 	zVelocity = jumpPower;
+	// 	// 현재 점프 횟수를 늘려준다.
+	// 	currentJumpCount++;
+	// }
+	Jump();
 }
 
 void ATPSPlayer::PlayerMove(const struct FInputActionValue& inputValue)

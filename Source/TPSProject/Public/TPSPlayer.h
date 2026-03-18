@@ -76,5 +76,17 @@ public: // -------------- 입력 -------------
 	// 현재 점프횟수
 	int32 currentJumpCount = 0;
 
-	
+	// 총 스켈레탈 메시
+	UPROPERTY(VisibleAnywhere)
+	class USkeletalMeshComponent* gunMeshComp;
+
+	// 사용자가 발사버튼을 누르면 총알을 발사하고 싶다.
+	// 필요속성 : 입력, 총알공장, 총구위치
+	UPROPERTY(EditDefaultsOnly, Category=Bullet)
+	TSubclassOf<class ABullet> bulletFactory;
+
+	UPROPERTY(EditDefaultsOnly, Category=Input)
+	class UInputAction* ia_Fire;
+	// 점프 입력 처리 함수
+	void PlayerFire(const struct FInputActionValue& inputValue);
 };
