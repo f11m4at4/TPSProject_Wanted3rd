@@ -34,4 +34,14 @@ public:
 	// 외관 컴포넌트
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* bodyMesh;
+
+	// 총알제거함수
+	void Die();
+
+	// 총알 속도
+	UPROPERTY(EditAnywhere, Category=Stats)
+	float speed = 5000;
+
+	// 액터의 특정 속성을 수정하면 호출되는 이벤트 함수
+	virtual  void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 };

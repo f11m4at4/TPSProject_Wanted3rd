@@ -30,7 +30,7 @@ public:
 	// Springarm 컴포넌트 만들고 싶다. -> 2
 	UPROPERTY(VisibleAnywhere)	
 	class USpringArmComponent* springArmComp;
-	UPROPERTY(VisibleAnywhere)	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)	
 	class UCameraComponent* tpsCamComp;
 
 public: // -------------- 입력 -------------
@@ -89,4 +89,27 @@ public: // -------------- 입력 -------------
 	class UInputAction* ia_Fire;
 	// 점프 입력 처리 함수
 	void PlayerFire(const struct FInputActionValue& inputValue);
+
+	// 스나이퍼건 컴포넌트
+	UPROPERTY(VisibleAnywhere)
+	class UStaticMeshComponent* sniperGunComp;
+
+	// 총교체 입력
+	UPROPERTY(EditDefaultsOnly, Category=Input)
+	class UInputAction* ia_GrenadeGun;
+	UPROPERTY(EditDefaultsOnly, Category=Input)
+	class UInputAction* ia_SniperGun;
+	// Grenade 변경
+	void ChangeToGrenadeGun(const struct FInputActionValue& inputValue);
+	// Sniper 변경
+	void ChangeToSniperGun(const struct FInputActionValue& inputValue);
+
+	// 필요정보 : 유탄발사기를 들고 있는지 여부
+	bool bUseGrenadeGun = false;
+
+	// 스나이퍼 스코프
+	UPROPERTY(EditDefaultsOnly, Category=Input)
+	class UInputAction* ia_SniperScope;
+
+	//void SniperAim(const struct FInputActionValue& inputValue);
 };

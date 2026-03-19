@@ -83,13 +83,28 @@ ATPSPlayer::ATPSPlayer()
 	{
 		ia_Fire = TempFireInput.Object;
 	}
+
+	//InitialLifeSpan = 2.0f;
+
+	// 스나이퍼건 등록
+	sniperGunComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("sniperGunComp"));
+	sniperGunComp->SetupAttachment(GetMesh());
+	
+	ConstructorHelpers::FObjectFinder<UStaticMesh> TempSniperGun(TEXT("/Script/Engine.StaticMesh'/Game/SniperGun/sniper11.sniper11'"));
+	if (TempSniperGun.Succeeded())
+	{
+		sniperGunComp->SetStaticMesh(TempSniperGun.Object);
+		sniperGunComp->SetRelativeLocation(FVector(-20.000000,65.595216,140.000000));
+		sniperGunComp->SetRelativeScale3D(FVector(0.140000,0.140000,0.140000));
+	}
 }
 
 // Called when the game starts or when spawned
 void ATPSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	ChangeToSniperGun(FInputActionValue());
 }
 
 // Called every frame
@@ -157,16 +172,44 @@ void ATPSPlayer::SetupPlayerInputComponent(
 			playerInput->BindAction(ia_Jump, ETriggerEvent::Started, this, &ATPSPlayer::PlayerJump);
 			
 			playerInput->BindAction(ia_Fire, ETriggerEvent::Started, this, &ATPSPlayer::PlayerFire);
+			
+			playerInput->BindAction(ia_GrenadeGun, ETriggerEvent::Started, this, &ATPSPlayer::ChangeToGrenadeGun);
+			playerInput->BindAction(ia_SniperGun, ETriggerEvent::Started, this, &ATPSPlayer::ChangeToSniperGun);
 		}
 	}
 }
 
+
+
+void ATPSPlayer::ChangeToGrenadeGun(const struct FInputActionValue& inputValue)
+{
+	// 유탄총으로 교체
+	bUseGrenadeGun = true;
+	gunMeshComp->SetVisibility(true);
+	sniperGunComp->SetVisibility(false);
+}
+
+void ATPSPlayer::ChangeToSniperGun(const struct FInputActionValue& inputValue)
+{
+	bUseGrenadeGun = false;
+	gunMeshComp->SetVisibility(false);
+	sniperGunComp->SetVisibility(true);
+}
+
 void ATPSPlayer::PlayerFire(const struct FInputActionValue& inputValue)
 {
-	// 총알 발사 처리
-	// fireposition socket transform 값 얻어오기
-	FTransform firePosition = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
-	GetWorld()->SpawnActor<ABullet>(bulletFactory, firePosition);
+	// 유탄발사기를 들고 있으면 총을 발사 하고 싶다.
+	// 1. 발사버튼을 눌렀으니까
+	// 2. 유탄발사기를 들고 있으니까.
+	// 만약 유탄총이 사용중이라면
+	if (bUseGrenadeGun == true)
+	{
+		// 3. 총을 발사하고 싶다.
+		// 총알 발사 처리
+		// fireposition socket transform 값 얻어오기
+		FTransform firePosition = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
+		GetWorld()->SpawnActor<ABullet>(bulletFactory, firePosition);
+	}
 }
 
 void ATPSPlayer::PlayerJump(const struct FInputActionValue& inputValue)

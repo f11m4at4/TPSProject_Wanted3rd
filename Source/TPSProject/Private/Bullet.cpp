@@ -52,7 +52,36 @@ ABullet::ABullet()
 void ABullet::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// 타이머.
+	FTimerHandle deathTimer;
+
+	// lambda 객체
+	auto DeathFunc = [this]()->void
+	{
+		Destroy();	
+	};
 	
+	GetWorldTimerManager().SetTimer(deathTimer, FTimerDelegate::CreateLambda(DeathFunc), 2.0f, false);
+}
+
+
+void ABullet::Die()
+{
+	Destroy();
+}
+
+void ABullet::PostEditChangeProperty(
+	struct FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	// speed 값이 수정됐는지 체크
+	if (PropertyChangedEvent.GetPropertyName() == TEXT("speed"))
+	{
+		moveComp->InitialSpeed = speed;
+		moveComp->MaxSpeed = speed;
+	}
 }
 
 // Called every frame
