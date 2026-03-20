@@ -111,5 +111,31 @@ public: // -------------- 입력 -------------
 	UPROPERTY(EditDefaultsOnly, Category=Input)
 	class UInputAction* ia_SniperScope;
 
-	//void SniperAim(const struct FInputActionValue& inputValue);
+	// 스나이퍼UI
+	UPROPERTY(EditDefaultsOnly, Category=Sniper)
+	TSubclassOf<class UUserWidget> sniperUIFactory;
+	// create widget 으로 생성된 인스턴스
+	UPROPERTY()
+	class UUserWidget* _sniperUI;
+
+	// 조준 중인지 여부
+	bool bSniperAim = false;
+	void SniperAim(const struct FInputActionValue& inputValue);
+
+	// 총알 파편 이팩트
+	UPROPERTY(EditDefaultsOnly, Category=Effect)
+	class UNiagaraSystem* bulletEffectFactory;
+
+	UPROPERTY(EditDefaultsOnly, Category=Effect)
+	class USoundBase* bulletEffectSound;
 };
+
+
+
+
+
+
+
+
+
+

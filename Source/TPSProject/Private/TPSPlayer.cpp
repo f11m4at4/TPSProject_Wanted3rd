@@ -11,6 +11,9 @@
 #include "InputMappingContext.h"
 #include "TPSProject.h"
 #include "Bullet.h"
+#include "Blueprint/UserWidget.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -97,12 +100,21 @@ ATPSPlayer::ATPSPlayer()
 		sniperGunComp->SetRelativeLocation(FVector(-20.000000,65.595216,140.000000));
 		sniperGunComp->SetRelativeScale3D(FVector(0.140000,0.140000,0.140000));
 	}
+
+	ConstructorHelpers::FClassFinder<UUserWidget> TempSniperUI(TEXT("'/Game/UI/WBP_SniperUI.WBP_SniperUI_C'"));
+	if (TempSniperUI.Succeeded())
+	{
+		sniperUIFactory = TempSniperUI.Class;
+	}
 }
 
 // Called when the game starts or when spawned
 void ATPSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// 스나이퍼 UI
+	_sniperUI = CreateWidget(GetWorld(), sniperUIFactory);
 
 	ChangeToSniperGun(FInputActionValue());
 }
@@ -175,11 +187,30 @@ void ATPSPlayer::SetupPlayerInputComponent(
 			
 			playerInput->BindAction(ia_GrenadeGun, ETriggerEvent::Started, this, &ATPSPlayer::ChangeToGrenadeGun);
 			playerInput->BindAction(ia_SniperGun, ETriggerEvent::Started, this, &ATPSPlayer::ChangeToSniperGun);
+			
+			playerInput->BindAction(ia_SniperScope, ETriggerEvent::Started, this, &ATPSPlayer::SniperAim);
+			playerInput->BindAction(ia_SniperScope, ETriggerEvent::Completed, this, &ATPSPlayer::SniperAim);
 		}
 	}
 }
 
-
+void ATPSPlayer::SniperAim(const struct FInputActionValue& inputValue)
+{
+	// 조준중이 아닐때
+	if (bSniperAim == false)
+	{
+		bSniperAim = true;
+		_sniperUI->AddToViewport();
+		tpsCamComp->SetFieldOfView(45.0f);
+	}
+	// 주준중일 때
+	else
+	{
+		bSniperAim = false;
+		_sniperUI->RemoveFromParent();
+		tpsCamComp->SetFieldOfView(90.0f);
+	}
+}
 
 void ATPSPlayer::ChangeToGrenadeGun(const struct FInputActionValue& inputValue)
 {
@@ -198,6 +229,8 @@ void ATPSPlayer::ChangeToSniperGun(const struct FInputActionValue& inputValue)
 
 void ATPSPlayer::PlayerFire(const struct FInputActionValue& inputValue)
 {
+	// 탕!
+	UGameplayStatics::PlaySound2D(GetWorld(), bulletEffectSound);
 	// 유탄발사기를 들고 있으면 총을 발사 하고 싶다.
 	// 1. 발사버튼을 눌렀으니까
 	// 2. 유탄발사기를 들고 있으니까.
@@ -209,6 +242,23 @@ void ATPSPlayer::PlayerFire(const struct FInputActionValue& inputValue)
 		// fireposition socket transform 값 얻어오기
 		FTransform firePosition = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
 		GetWorld()->SpawnActor<ABullet>(bulletFactory, firePosition);
+	}
+	else
+	{
+		// sniper 사용시
+		// 두개의 점이 필요
+		FVector startPos = tpsCamComp->GetComponentLocation();
+		FVector endPos = startPos + tpsCamComp->GetForwardVector() * 50000;
+		FHitResult hitInfo;
+		FCollisionQueryParams param;
+		param.AddIgnoredActor(this);
+		bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, param);
+
+		if (bHit)
+		{
+			// 총알 파편이라도 표시되도록
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), bulletEffectFactory, hitInfo.Location);
+		}
 	}
 }
 
