@@ -112,7 +112,7 @@ public: // -------------- 입력 -------------
 	class UInputAction* ia_SniperScope;
 
 	// 스나이퍼UI
-	UPROPERTY(EditDefaultsOnly, Category=Sniper)
+	UPROPERTY(EditDefaultsOnly, Category=UI)
 	TSubclassOf<class UUserWidget> sniperUIFactory;
 	// create widget 으로 생성된 인스턴스
 	UPROPERTY()
@@ -128,6 +128,13 @@ public: // -------------- 입력 -------------
 
 	UPROPERTY(EditDefaultsOnly, Category=Effect)
 	class USoundBase* bulletEffectSound;
+
+	// crosshair UI
+	UPROPERTY(EditDefaultsOnly, Category=UI)
+	TSubclassOf<class UUserWidget> crosshairUIFactory;
+	// create widget 으로 생성된 인스턴스
+	UPROPERTY()
+	class UUserWidget* _crosshairUI;
 };
 
 

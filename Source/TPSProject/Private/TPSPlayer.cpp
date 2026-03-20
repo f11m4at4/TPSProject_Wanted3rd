@@ -20,6 +20,7 @@ ATPSPlayer::ATPSPlayer()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("'/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'"));
 	if (TempMesh.Succeeded())
 	{
@@ -116,6 +117,10 @@ void ATPSPlayer::BeginPlay()
 	// 스나이퍼 UI
 	_sniperUI = CreateWidget(GetWorld(), sniperUIFactory);
 
+	// crosshair ui
+	_crosshairUI = CreateWidget(GetWorld(), crosshairUIFactory);
+	_crosshairUI->AddToViewport();
+	
 	ChangeToSniperGun(FInputActionValue());
 }
 
@@ -202,13 +207,16 @@ void ATPSPlayer::SniperAim(const struct FInputActionValue& inputValue)
 		bSniperAim = true;
 		_sniperUI->AddToViewport();
 		tpsCamComp->SetFieldOfView(45.0f);
+		// crosshair 는 안보이게
+		_crosshairUI->RemoveFromParent();
 	}
-	// 주준중일 때
+	// 조준중일 때
 	else
 	{
 		bSniperAim = false;
 		_sniperUI->RemoveFromParent();
 		tpsCamComp->SetFieldOfView(90.0f);
+		_crosshairUI->AddToViewport();
 	}
 }
 
@@ -258,6 +266,16 @@ void ATPSPlayer::PlayerFire(const struct FInputActionValue& inputValue)
 		{
 			// 총알 파편이라도 표시되도록
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), bulletEffectFactory, hitInfo.Location);
+			auto hitComp = hitInfo.GetComponent();
+			// 부딪힌 물체가 물리기능이 켜있다면
+			if (hitComp && hitComp->IsSimulatingPhysics())
+			{
+				// 날려보내자
+				// F = ma
+				FVector dir = tpsCamComp->GetForwardVector();
+				FVector force = dir * 500000;
+				hitComp->AddImpulseAtLocation(force, hitInfo.Location);
+			}
 		}
 	}
 }
