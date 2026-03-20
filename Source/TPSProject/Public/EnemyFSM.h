@@ -40,6 +40,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=FSM)
 	EEnemyState _state = EEnemyState::Idle;
 
+	// 필요속성(정보) : 경과시간, 대기시간
+	float currentTime = 0;
+	UPROPERTY(EditAnywhere, Category=FSM)
+	float idleDelayTime = 2.05f;
+	
 	void IdleState();
 	void MoveState();
 	void AttackState();

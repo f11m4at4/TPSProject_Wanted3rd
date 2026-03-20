@@ -59,9 +59,19 @@ void UEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType,
 
 // ------------------------ 본문 ----------------------
 // 일정시간이 지나면 상태를 이동으로 바꾸고 싶다.
-
 void UEnemyFSM::IdleState()
 {
+	// 일정시간이 지나면 상태를 이동으로 바꾸고 싶다.
+	// 1. 시간이 흘렀으니까
+	currentTime += GetWorld()->DeltaTimeSeconds;
+	// 2. 시간이 됐으니까.
+	// -> 만약 경과시간이 대기시간을 초과했다면
+	if (currentTime > idleDelayTime)
+	{
+		// 3. 상태를 이동으로 전환하고 싶다.
+		_state = EEnemyState::Move;
+		currentTime = 0;
+	}
 }
 
 void UEnemyFSM::MoveState()
