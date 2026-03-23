@@ -11,6 +11,7 @@
 #include "InputMappingContext.h"
 #include "TPSProject.h"
 #include "Bullet.h"
+#include "EnemyFSM.h"
 #include "Blueprint/UserWidget.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -275,6 +276,17 @@ void ATPSPlayer::PlayerFire(const struct FInputActionValue& inputValue)
 				FVector dir = tpsCamComp->GetForwardVector();
 				FVector force = dir * 500000;
 				hitComp->AddImpulseAtLocation(force, hitInfo.Location);
+			}
+
+			// 만약 맞은 녀석이 Enemy 라면
+			// 1. 이름검색
+			// 2. Tag
+			// 3. 니가 갖고 있는 컴포넌트 중 EnemyFSM 줘봐.
+			auto enemy = Cast<UEnemyFSM>(hitInfo.GetActor()->GetDefaultSubobjectByName(TEXT("FSM")));
+			if (enemy)
+			{
+				// 피격 이벤트 호출해주자.
+				enemy->OnDamageProcess();
 			}
 		}
 	}
