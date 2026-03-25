@@ -135,6 +135,10 @@ public: // -------------- 입력 -------------
 	// create widget 으로 생성된 인스턴스
 	UPROPERTY()
 	class UUserWidget* _crosshairUI;
+
+	// 총쏘기 카메라셰이크
+	UPROPERTY(EditDefaultsOnly, Category=Effect)
+	TSubclassOf<class UCameraShakeBase> fireCameraShake;
 };
 
 

@@ -14,6 +14,7 @@
 #include "EnemyFSM.h"
 #include "Blueprint/UserWidget.h"
 #include "NiagaraFunctionLibrary.h"
+#include "PlayerAnim.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -93,20 +94,27 @@ ATPSPlayer::ATPSPlayer()
 
 	// 스나이퍼건 등록
 	sniperGunComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("sniperGunComp"));
-	sniperGunComp->SetupAttachment(GetMesh());
+	sniperGunComp->SetupAttachment(GetMesh(), TEXT("GunPosition"));
 	
 	ConstructorHelpers::FObjectFinder<UStaticMesh> TempSniperGun(TEXT("/Script/Engine.StaticMesh'/Game/SniperGun/sniper11.sniper11'"));
 	if (TempSniperGun.Succeeded())
 	{
 		sniperGunComp->SetStaticMesh(TempSniperGun.Object);
-		sniperGunComp->SetRelativeLocation(FVector(-20.000000,65.595216,140.000000));
-		sniperGunComp->SetRelativeScale3D(FVector(0.140000,0.140000,0.140000));
+		sniperGunComp->SetRelativeLocation(FVector(-33.282315,0.762495,6.716982));
+		sniperGunComp->SetRelativeScale3D(FVector(22.378173,95.020528,-9.495120));
 	}
 
 	ConstructorHelpers::FClassFinder<UUserWidget> TempSniperUI(TEXT("'/Game/UI/WBP_SniperUI.WBP_SniperUI_C'"));
 	if (TempSniperUI.Succeeded())
 	{
 		sniperUIFactory = TempSniperUI.Class;
+	}
+
+	// // 카메라셰이크 로드
+	ConstructorHelpers::FClassFinder<UCameraShakeBase> TempCS(TEXT("/Script/Engine.Blueprint'/Game/Blueprints/BP_CameraShake.BP_CameraShake_C'"));
+	if (TempCS.Succeeded())
+	{
+		fireCameraShake = TempCS.Class;
 	}
 }
 
@@ -123,6 +131,8 @@ void ATPSPlayer::BeginPlay()
 	_crosshairUI->AddToViewport();
 	
 	ChangeToSniperGun(FInputActionValue());
+
+	
 }
 
 // Called every frame
@@ -238,6 +248,13 @@ void ATPSPlayer::ChangeToSniperGun(const struct FInputActionValue& inputValue)
 
 void ATPSPlayer::PlayerFire(const struct FInputActionValue& inputValue)
 {
+	// 카메라셰이크 재생
+	auto pc = Cast<APlayerController>(Controller);
+	pc->ClientStartCameraShake(fireCameraShake);
+	
+	// 애니메이션재생
+	auto anim = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	anim->PlayAttackAnim();
 	// 탕!
 	UGameplayStatics::PlaySound2D(GetWorld(), bulletEffectSound);
 	// 유탄발사기를 들고 있으면 총을 발사 하고 싶다.

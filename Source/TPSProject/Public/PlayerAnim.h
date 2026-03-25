@@ -23,4 +23,13 @@ public:
 	// 공중에 있는지 여부
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=PlayerAnim)
 	bool isInAir = false;
+
+	// 총쏘기
+	UPROPERTY(EditDefaultsOnly, Category=PlayerAnim)
+	class UAnimMontage* attackAnimMontage;
+	
+	void PlayAttackAnim();
+public:
+	UPlayerAnim();
+	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 };
