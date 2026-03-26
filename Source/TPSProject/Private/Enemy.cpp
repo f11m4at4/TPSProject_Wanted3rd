@@ -12,14 +12,20 @@ AEnemy::AEnemy()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("'/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple'"));
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("'/Game/Enemy/Model/vampire_a_lusth.vampire_a_lusth'"));
 	if (TempMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
-		GetMesh()->SetRelativeLocationAndRotation(FVector(0.000000,0.000000,-90.000000), FRotator(0.000000,-90.000000,0.000000));
+		GetMesh()->SetRelativeLocationAndRotation(FVector(0.84f), FRotator(0.000000,-90.000000,0.000000));
 	}
 
 	fsm = CreateDefaultSubobject<UEnemyFSM>(TEXT("FSM"));
+
+	ConstructorHelpers::FClassFinder<UAnimInstance> TempAnim(TEXT("/Script/Engine.AnimBlueprint'/Game/Blueprints/ABP_Enemy.ABP_Enemy_C'"));
+	if (TempAnim.Succeeded())
+	{
+		GetMesh()->SetAnimInstanceClass(TempAnim.Class);
+	}
 }
 
 // Called when the game starts or when spawned
