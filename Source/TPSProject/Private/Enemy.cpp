@@ -16,7 +16,8 @@ AEnemy::AEnemy()
 	if (TempMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
-		GetMesh()->SetRelativeLocationAndRotation(FVector(0.84f), FRotator(0.000000,-90.000000,0.000000));
+		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -85), FRotator(0.000000,-90.000000,0.000000));
+		GetMesh()->SetRelativeScale3D(FVector(0.84f));
 	}
 
 	fsm = CreateDefaultSubobject<UEnemyFSM>(TEXT("FSM"));

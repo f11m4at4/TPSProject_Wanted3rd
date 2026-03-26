@@ -79,5 +79,13 @@ public:
 	int32 maxHP = 3;
 	int32 hp = 3;
 
+	// 애니메이션 블루프린트
+	UPROPERTY()
+	class UEnemyAnim* anim;
+
+	// Die 상태일때 사라지는 속도
+	UPROPERTY(EditAnywhere, Category=Stats)
+	float dieSpeed = 20.5f;
+	
 
 };

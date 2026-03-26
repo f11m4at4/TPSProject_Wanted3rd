@@ -4,8 +4,10 @@
 #include "EnemyFSM.h"
 
 #include "Enemy.h"
+#include "EnemyAnim.h"
 #include "TPSPlayer.h"
 #include "TPSProject.h"
+#include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -32,6 +34,8 @@ void UEnemyFSM::BeginPlay()
 	me = Cast<AEnemy>(GetOwner());
 
 	hp = maxHP;
+
+	anim = Cast<UEnemyAnim>(me->GetMesh()->GetAnimInstance());
 }
 
 
@@ -79,8 +83,10 @@ void UEnemyFSM::IdleState()
 		// 3. 상태를 이동으로 전환하고 싶다.
 		_state = EEnemyState::Move;
 		currentTime = 0;
+		anim->animState = _state;
 	}
 }
+
 
 // 타겟쪽으로 이동하고 싶다.
 void UEnemyFSM::MoveState()
@@ -105,6 +111,8 @@ void UEnemyFSM::MoveState()
 	{
 		// 2. 상태를 공격으로 전환하고 싶다.
 		_state = EEnemyState::Attack;
+		anim->animState = _state;
+		currentTime = attackDelayTime;
 	}
 }
 
@@ -117,7 +125,7 @@ void UEnemyFSM::AttackState()
 	{
 		// 3. 공격하고 싶다.
 		currentTime = 0;
-		PRINTLOG(TEXT("Attack!!!!!"));
+		anim->bAttackPlay = true;
 	}
 	// 거리가 공격범위를 벗어나면
 	float distance = FVector::Distance(me->GetActorLocation(), target->GetActorLocation());
@@ -125,6 +133,7 @@ void UEnemyFSM::AttackState()
 	{
 		// 상태를 이동으로 전환하고 싶다.
 		_state = EEnemyState::Move;
+		anim->animState = _state;
 	}
 }
 
@@ -136,11 +145,30 @@ void UEnemyFSM::DamageState()
 	{
 		currentTime = 0;
 		_state = EEnemyState::Idle;
+		anim->animState = _state;
+
 	}
 }
 
+// 죽었을 때 아래로 사라지도록 하자.
+// 필요속성 : 이동속도, 200
+// 다 사라지면 destroy 하자.
 void UEnemyFSM::DieState()
 {
+	// 애니메이션이 끝나지 않았으면
+	if (anim->bDieEnd == false)
+	{
+		// 아무것도 안한다.
+		return;
+	}
+	// 이동한다.
+	FVector P = me->GetActorLocation() + FVector::DownVector * dieSpeed * GetWorld()->DeltaTimeSeconds;
+	me->SetActorLocation(P);
+	// 다 사라지면 destroy 하자.
+	if (P.Z < -200)
+	{
+		me->Destroy();
+	}
 }
 
 void UEnemyFSM::OnDamageProcess()
@@ -153,11 +181,21 @@ void UEnemyFSM::OnDamageProcess()
 	{
 		// -> 상태를 피격으로 전환
 		_state = EEnemyState::Damage;
+		// 피격 애니메이션 재생
+		int32 index = FMath::RandRange(0, 1);
+		FString sectionName = FString::Printf(TEXT("Damage%d"), index);
+		anim->PlayDamageAnim(FName(*sectionName));
 	}
 	// 그렇지 않으면
 	else
 	{
 		// -> 상태를 죽음으로 전환
 		_state = EEnemyState::Die;
+
+		me->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		
+		anim->PlayDamageAnim(TEXT("Die"));
 	}
+	anim->animState = _state;
 }
+
