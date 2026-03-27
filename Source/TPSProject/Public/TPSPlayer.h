@@ -50,9 +50,18 @@ public: // -------------- 입력 -------------
 	UPROPERTY(EditDefaultsOnly, Category=Input)
 	class UInputAction* ia_Move;
 
+	//걸을때 속도
 	UPROPERTY(EditAnywhere, Category=PlayerStats)
-	float speed = 600;
+	float walkSpeed = 200;
+	//달릴때 속도
+	UPROPERTY(EditAnywhere, Category=PlayerStats)
+	float runSpeed = 600;
 
+	UPROPERTY(EditDefaultsOnly, Category=Input)
+	class UInputAction* ia_Run;
+	// 이동 입력 처리 함수
+	void ChangeSpeedInput(const struct FInputActionValue& inputValue);
+	
 	FVector direction;
 	
 	// 이동 입력 처리 함수

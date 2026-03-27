@@ -99,7 +99,7 @@ void UEnemyFSM::MoveState()
 
 	me->AddMovementInput(dir.GetSafeNormal());
 	// // 이동하고싶다.
-	// FVector P = me->GetActorLocation() + dir.GetSafeNormal() * speed * GetWorld()->DeltaTimeSeconds;
+	// FVector P = me->GetActorLocation() + dir.GetSafeNormal() * walkSpeed * GetWorld()->DeltaTimeSeconds;
 	// me->SetActorLocation(P);
 
 	DrawDebugSphere(GetWorld(), me->GetActorLocation(), attackRange, 20, FColor::Cyan);

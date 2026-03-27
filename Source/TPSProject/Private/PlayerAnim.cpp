@@ -26,7 +26,7 @@ void UPlayerAnim::NativeUpdateAnimation(float DeltaSeconds)
 	if (player)
 	{
 		FVector velocity = player->GetVelocity();
-		// speed
+		// walkSpeed
 		FVector forward = player->GetActorForwardVector();
 		speed = velocity.Dot(forward);
 		// direction

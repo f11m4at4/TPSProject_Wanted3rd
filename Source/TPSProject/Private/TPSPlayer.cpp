@@ -15,6 +15,7 @@
 #include "Blueprint/UserWidget.h"
 #include "NiagaraFunctionLibrary.h"
 #include "PlayerAnim.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -90,6 +91,12 @@ ATPSPlayer::ATPSPlayer()
 		ia_Fire = TempFireInput.Object;
 	}
 
+	ConstructorHelpers::FObjectFinder<UInputAction> TempRunInput(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_Run.IA_Run'"));
+	if (TempRunInput.Succeeded())
+	{
+		ia_Run = TempRunInput.Object;
+	}
+	
 	//InitialLifeSpan = 2.0f;
 
 	// 스나이퍼건 등록
@@ -132,7 +139,8 @@ void ATPSPlayer::BeginPlay()
 	
 	ChangeToSniperGun(FInputActionValue());
 
-	
+	// 초기 속도는 걷는 속도로 설정
+	GetCharacterMovement()->MaxWalkSpeed = walkSpeed;
 }
 
 // Called every frame
@@ -153,11 +161,11 @@ void ATPSPlayer::Tick(float DeltaTime)
 	// zVelocity += gravity * DeltaTime;
 	// // 수직이동 P = P0 + vt
 	// FHitResult result;
-	// SetActorLocation(GetActorLocation() + FVector(0, 0, zVelocity) * speed * DeltaTime, true, &result);
+	// SetActorLocation(GetActorLocation() + FVector(0, 0, zVelocity) * walkSpeed * DeltaTime, true, &result);
 	//
 	// // 이동하고 싶다. P = P0 + vt : 등속운동
 	// FVector P0 = GetActorLocation();
-	// FVector vt = direction * speed * DeltaTime;
+	// FVector vt = direction * walkSpeed * DeltaTime;
 	// FVector P = P0 + vt;
 	// SetActorLocation(P, true);
 	//
@@ -206,7 +214,22 @@ void ATPSPlayer::SetupPlayerInputComponent(
 			
 			playerInput->BindAction(ia_SniperScope, ETriggerEvent::Started, this, &ATPSPlayer::SniperAim);
 			playerInput->BindAction(ia_SniperScope, ETriggerEvent::Completed, this, &ATPSPlayer::SniperAim);
+
+			playerInput->BindAction(ia_Run, ETriggerEvent::Started, this, &ATPSPlayer::ChangeSpeedInput);
+			playerInput->BindAction(ia_Run, ETriggerEvent::Completed, this, &ATPSPlayer::ChangeSpeedInput);
 		}
+	}
+}
+
+void ATPSPlayer::ChangeSpeedInput(const struct FInputActionValue& inputValue)
+{
+	if (GetCharacterMovement()->MaxWalkSpeed > walkSpeed)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = walkSpeed;
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = runSpeed;
 	}
 }
 
