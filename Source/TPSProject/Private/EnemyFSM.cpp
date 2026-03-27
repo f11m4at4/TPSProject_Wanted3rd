@@ -3,12 +3,15 @@
 
 #include "EnemyFSM.h"
 
+#include "AIController.h"
 #include "Enemy.h"
 #include "EnemyAnim.h"
+#include "NavigationSystem.h"
 #include "TPSPlayer.h"
 #include "TPSProject.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Navigation/PathFollowingComponent.h"
 
 
 // Sets default values for this component's properties
@@ -36,6 +39,9 @@ void UEnemyFSM::BeginPlay()
 	hp = maxHP;
 
 	anim = Cast<UEnemyAnim>(me->GetMesh()->GetAnimInstance());
+
+	// ai controller 할당하기
+	ai = Cast<AAIController>(me->Controller);
 }
 
 
@@ -84,6 +90,8 @@ void UEnemyFSM::IdleState()
 		_state = EEnemyState::Move;
 		currentTime = 0;
 		anim->animState = _state;
+		//최초 랜덤포즈 위치 정해주기
+		GetRandomPosInNavMesh(me->GetActorLocation(), 500, randomPos);
 	}
 }
 
@@ -97,7 +105,37 @@ void UEnemyFSM::MoveState()
 	// dir 을 시각적으로 표시해보자
 	DrawDebugLine(GetWorld(), me->GetActorLocation(), me->GetActorLocation() + dir.GetSafeNormal() * 100, FColor::Red);
 
-	me->AddMovementInput(dir.GetSafeNormal());
+	// me->AddMovementInput(dir.GetSafeNormal());
+
+	// 길찾기로 이동
+	// 타겟위치로 갈수 있나?
+	auto ns = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	FPathFindingQuery query;
+	FAIMoveRequest req;
+	req.SetAcceptanceRadius(10);
+	req.SetGoalLocation(target->GetActorLocation());
+	ai->BuildPathfindingQuery(req, query);
+	// 길찾기 결과 가져오기
+	auto r = ns->FindPathSync(query);
+	// 타겟위치로 갈수 있다면 가라.
+	if (r.Result == ENavigationQueryResult::Success)
+	{
+		ai->MoveToLocation(target->GetActorLocation());
+	}
+	// 그렇지 않으면
+	else
+	{
+		// - 랜덤위치로 가라
+		auto result = ai->MoveToLocation(randomPos);
+		// - 랜덤위치에 도착하면
+		if (result == EPathFollowingRequestResult::AlreadyAtGoal)
+		{
+			// -> 다시 랜덤위치 설정
+			GetRandomPosInNavMesh(me->GetActorLocation(), 500, randomPos);
+		}
+	}
+
+	
 	// // 이동하고싶다.
 	// FVector P = me->GetActorLocation() + dir.GetSafeNormal() * walkSpeed * GetWorld()->DeltaTimeSeconds;
 	// me->SetActorLocation(P);
@@ -113,6 +151,7 @@ void UEnemyFSM::MoveState()
 		_state = EEnemyState::Attack;
 		anim->animState = _state;
 		currentTime = attackDelayTime;
+		ai->StopMovement();
 	}
 }
 
@@ -134,6 +173,8 @@ void UEnemyFSM::AttackState()
 		// 상태를 이동으로 전환하고 싶다.
 		_state = EEnemyState::Move;
 		anim->animState = _state;
+
+		GetRandomPosInNavMesh(me->GetActorLocation(), 500, randomPos);
 	}
 }
 
@@ -197,5 +238,17 @@ void UEnemyFSM::OnDamageProcess()
 		anim->PlayDamageAnim(TEXT("Die"));
 	}
 	anim->animState = _state;
+	ai->StopMovement();
+}
+
+bool UEnemyFSM::GetRandomPosInNavMesh(FVector centerPos, float radius,
+	FVector& dest)
+{
+	auto ns = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	FNavLocation loc;
+	bool bResult = ns->GetRandomReachablePointInRadius(centerPos, radius, loc);
+	dest = loc.Location;
+
+	return bResult;
 }
 

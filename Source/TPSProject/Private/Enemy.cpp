@@ -27,6 +27,8 @@ AEnemy::AEnemy()
 	{
 		GetMesh()->SetAnimInstanceClass(TempAnim.Class);
 	}
+
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 // Called when the game starts or when spawned

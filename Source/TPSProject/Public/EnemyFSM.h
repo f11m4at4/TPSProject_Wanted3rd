@@ -86,6 +86,13 @@ public:
 	// Die 상태일때 사라지는 속도
 	UPROPERTY(EditAnywhere, Category=Stats)
 	float dieSpeed = 20.5f;
-	
 
+	// Enemy를 possess 하고 있는 AIController
+	UPROPERTY()
+	class AAIController* ai;
+
+	// 랜덤한 위치
+	FVector randomPos;
+	// 랜덤한 위치 찾아오기
+	bool GetRandomPosInNavMesh(FVector centerPos, float radius, FVector& dest);
 };
