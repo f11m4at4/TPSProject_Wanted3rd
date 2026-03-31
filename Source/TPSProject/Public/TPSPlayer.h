@@ -34,120 +34,24 @@ public:
 	class UCameraComponent* tpsCamComp;
 
 public: // -------------- 입력 -------------
-	UPROPERTY(EditDefaultsOnly, Category=Input)
-	class UInputAction* ia_Turn;
-	UPROPERTY(EditDefaultsOnly, Category=Input)
-	class UInputAction* ia_Lookup;
+	
 	UPROPERTY(EditDefaultsOnly, Category=Input)
 	class UInputMappingContext* imc_TPS;
-
-	// 입력 처리 함수
-	// 좌우 회전 입력 처리
-	void Turn(const struct FInputActionValue& inputValue);
-	// 상하 회전 입력 처리
-	void Lookup(const struct FInputActionValue& inputValue);
-
-	UPROPERTY(EditDefaultsOnly, Category=Input)
-	class UInputAction* ia_Move;
-
-	//걸을때 속도
-	UPROPERTY(EditAnywhere, Category=PlayerStats)
-	float walkSpeed = 200;
-	//달릴때 속도
-	UPROPERTY(EditAnywhere, Category=PlayerStats)
-	float runSpeed = 600;
-
-	UPROPERTY(EditDefaultsOnly, Category=Input)
-	class UInputAction* ia_Run;
-	// 이동 입력 처리 함수
-	void ChangeSpeedInput(const struct FInputActionValue& inputValue);
-	
-	FVector direction;
-	
-	// 이동 입력 처리 함수
-	void PlayerMove(const struct FInputActionValue& inputValue);
-
-	// 중력가속도
-	float gravity = -10;
-	// 수직속도
-	float zVelocity = 0;
-	// 필요한 속성 : 점프 입력, 점프파워, 최대 점프 횟수, 현재 점프 횟수
-	UPROPERTY(EditDefaultsOnly, Category=Input)
-	class UInputAction* ia_Jump;
-	// 점프 입력 처리 함수
-	void PlayerJump(const struct FInputActionValue& inputValue);
-
-	UPROPERTY(EditAnywhere, Category=PlayerStats)
-	float jumpPower = 5;
-	// 최대 점프횟수
-	UPROPERTY(EditAnywhere, Category=PlayerStats)
-	int32 jumpMax = 2;
-	// 현재 점프횟수
-	int32 currentJumpCount = 0;
 
 	// 총 스켈레탈 메시
 	UPROPERTY(VisibleAnywhere)
 	class USkeletalMeshComponent* gunMeshComp;
 
-	// 사용자가 발사버튼을 누르면 총알을 발사하고 싶다.
-	// 필요속성 : 입력, 총알공장, 총구위치
-	UPROPERTY(EditDefaultsOnly, Category=Bullet)
-	TSubclassOf<class ABullet> bulletFactory;
-
-	UPROPERTY(EditDefaultsOnly, Category=Input)
-	class UInputAction* ia_Fire;
-	// 점프 입력 처리 함수
-	void PlayerFire(const struct FInputActionValue& inputValue);
-
 	// 스나이퍼건 컴포넌트
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* sniperGunComp;
 
-	// 총교체 입력
-	UPROPERTY(EditDefaultsOnly, Category=Input)
-	class UInputAction* ia_GrenadeGun;
-	UPROPERTY(EditDefaultsOnly, Category=Input)
-	class UInputAction* ia_SniperGun;
-	// Grenade 변경
-	void ChangeToGrenadeGun(const struct FInputActionValue& inputValue);
-	// Sniper 변경
-	void ChangeToSniperGun(const struct FInputActionValue& inputValue);
-
-	// 필요정보 : 유탄발사기를 들고 있는지 여부
-	bool bUseGrenadeGun = false;
-
-	// 스나이퍼 스코프
-	UPROPERTY(EditDefaultsOnly, Category=Input)
-	class UInputAction* ia_SniperScope;
-
-	// 스나이퍼UI
-	UPROPERTY(EditDefaultsOnly, Category=UI)
-	TSubclassOf<class UUserWidget> sniperUIFactory;
-	// create widget 으로 생성된 인스턴스
-	UPROPERTY()
-	class UUserWidget* _sniperUI;
-
-	// 조준 중인지 여부
-	bool bSniperAim = false;
-	void SniperAim(const struct FInputActionValue& inputValue);
-
-	// 총알 파편 이팩트
-	UPROPERTY(EditDefaultsOnly, Category=Effect)
-	class UNiagaraSystem* bulletEffectFactory;
-
-	UPROPERTY(EditDefaultsOnly, Category=Effect)
-	class USoundBase* bulletEffectSound;
-
-	// crosshair UI
-	UPROPERTY(EditDefaultsOnly, Category=UI)
-	TSubclassOf<class UUserWidget> crosshairUIFactory;
-	// create widget 으로 생성된 인스턴스
-	UPROPERTY()
-	class UUserWidget* _crosshairUI;
-
-	// 총쏘기 카메라셰이크
-	UPROPERTY(EditDefaultsOnly, Category=Effect)
-	TSubclassOf<class UCameraShakeBase> fireCameraShake;
+	// player move
+	UPROPERTY(VisibleAnywhere)
+	class UPlayerBaseComponent* playerMove;
+	// player fire
+	UPROPERTY(VisibleAnywhere)
+	class UPlayerBaseComponent* playerFire;
 };
 
 

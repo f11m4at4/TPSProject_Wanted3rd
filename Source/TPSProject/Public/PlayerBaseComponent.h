@@ -35,5 +35,5 @@ public:
 	UPROPERTY()
 	class UCharacterMovementComponent* moveComp;
 	// 2. 입력 함수
-	virtual void SetupInputBinding(class UInputComponent* playerInput) {};
+	virtual void SetupInputBinding(class UEnhancedInputComponent* playerInput) {};
 };
