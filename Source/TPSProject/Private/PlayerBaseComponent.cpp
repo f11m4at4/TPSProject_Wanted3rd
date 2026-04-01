@@ -3,6 +3,8 @@
 
 #include "PlayerBaseComponent.h"
 
+#include "TPSProject.h"
+
 
 // Sets default values for this component's properties
 UPlayerBaseComponent::UPlayerBaseComponent()
@@ -11,7 +13,18 @@ UPlayerBaseComponent::UPlayerBaseComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
+	bWantsInitializeComponent = true;
+}
+
+void UPlayerBaseComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	me = Cast<ATPSPlayer>(GetOwner());
+	moveComp = me->GetCharacterMovement();
+
+	// TPSPlayer 의 델리게이트에 입력 함수 등록하자.
+	me->onInputBindingDelegate.AddUObject(this, &UPlayerBaseComponent::SetupInputBinding);
 }
 
 
@@ -19,9 +32,7 @@ UPlayerBaseComponent::UPlayerBaseComponent()
 void UPlayerBaseComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	me = Cast<ATPSPlayer>(GetOwner());
-	moveComp = me->GetCharacterMovement();
+	
 }
 
 

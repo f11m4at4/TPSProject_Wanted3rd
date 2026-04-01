@@ -6,18 +6,27 @@
 #include "GameFramework/Character.h"
 #include "TPSPlayer.generated.h"
 
+// DECLARE_DELEGATE(FMyDelegate);
+DECLARE_MULTICAST_DELEGATE_OneParam(FInputBindingDelegate, class UEnhancedInputComponent*);
+
 UCLASS()
 class TPSPROJECT_API ATPSPlayer : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
+	// FMyDelegate myVar;
+	// 입력 바인딩 델리게이트
+	FInputBindingDelegate onInputBindingDelegate;
+public:
 	// Sets default values for this character's properties
 	ATPSPlayer();
 
 protected:
+	virtual void PostInitializeComponents() override;
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void TestFunc();
 
 public:
 	// Called every frame
@@ -52,6 +61,22 @@ public: // -------------- 입력 -------------
 	// player fire
 	UPROPERTY(VisibleAnywhere)
 	class UPlayerBaseComponent* playerFire;
+
+public:// --------------- 체력 ----------------
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Health)
+	int32 hp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Health)
+	int32 initialHP = 3;
+
+	// 피격시 호출될 함수
+	void OnHitEvent();
+
+	// MainUI
+	UPROPERTY(EditDefaultsOnly, Category=UI)
+	TSubclassOf<class UMainUI> mainUIFactory;
+	UPROPERTY()
+	class UMainUI* mainUI;
 };
 
 

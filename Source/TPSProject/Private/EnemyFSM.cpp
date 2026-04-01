@@ -118,6 +118,7 @@ void UEnemyFSM::MoveState()
 	// 길찾기 결과 가져오기
 	auto r = ns->FindPathSync(query);
 	// 타겟위치로 갈수 있다면 가라.
+
 	if (r.Result == ENavigationQueryResult::Success)
 	{
 		ai->MoveToLocation(target->GetActorLocation());
@@ -165,6 +166,7 @@ void UEnemyFSM::AttackState()
 		// 3. 공격하고 싶다.
 		currentTime = 0;
 		anim->bAttackPlay = true;
+		
 	}
 	// 거리가 공격범위를 벗어나면
 	float distance = FVector::Distance(me->GetActorLocation(), target->GetActorLocation());

@@ -17,8 +17,10 @@
 #include "PlayerAnim.h"
 #include "PlayerFire.h"
 #include "PlayerMove.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "MainUI.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -79,8 +81,21 @@ ATPSPlayer::ATPSPlayer()
 	}
 
 	// --------------------------------------
-	playerMove = CreateDefaultSubobject<UPlayerMove>(TEXT("PlayerMove"));
-	playerFire = CreateDefaultSubobject<UPlayerFire>(TEXT("PlayerFire"));
+	// playerMove = CreateDefaultSubobject<UPlayerMove>(TEXT("PlayerMove"));
+	// playerFire = CreateDefaultSubobject<UPlayerFire>(TEXT("PlayerFire"));
+}
+
+void ATPSPlayer::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	hp = initialHP;
+
+	// mainui 위젯 생성
+	mainUI = CreateWidget<UMainUI>(GetWorld(), mainUIFactory);
+	mainUI->AddToViewport();
+
+	mainUI->SetHP(hp, initialHP);
 }
 
 // Called when the game starts or when spawned
@@ -88,6 +103,11 @@ void ATPSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
+}
+
+void ATPSPlayer::TestFunc()
+{
+	PRINT_CALLINFO();
 }
 
 // Called every frame
@@ -116,13 +136,29 @@ void ATPSPlayer::SetupPlayerInputComponent(
 		if (playerInput)
 		{
 			// 이동 관련 입력은 PlayerMove 컴포넌트에서 처리하도록 설정
-			playerMove->SetupInputBinding(playerInput);
-			playerFire->SetupInputBinding(playerInput);
+			// playerMove->SetupInputBinding(playerInput);
+			// playerFire->SetupInputBinding(playerInput);
+			// 각 컴포넌트들에서 입력 바인딩 처리하도록 실행
+			onInputBindingDelegate.Broadcast(playerInput);
 		}
 	}
 }
 
-
+void ATPSPlayer::OnHitEvent()
+{
+	hp--;
+	mainUI->SetHP(hp, initialHP);
+	if (hp <= 0)
+	{
+		// gameover ui 보여주자
+		if (mainUI)
+		{
+			mainUI->ShowGameOver();
+		}
+		// 일시정시 시키자
+		UGameplayStatics::SetGamePaused(GetWorld(), true);
+	}
+}
 
 
 

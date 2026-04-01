@@ -26,6 +26,8 @@ void AEnemyGOD::BeginPlay()
 void AEnemyGOD::CreateEnemy()
 {
 	// 랜덤 위치 구하기
+	if (spawnPoints.Num() < 1)
+		return;
 	int index = FMath::RandRange(0, spawnPoints.Num()-1);
 	FVector pos = spawnPoints[index]->GetActorLocation();
 	// 적생성

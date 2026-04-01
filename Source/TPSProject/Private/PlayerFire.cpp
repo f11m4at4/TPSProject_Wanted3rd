@@ -6,6 +6,7 @@
 #include "Bullet.h"
 #include "EnemyFSM.h"
 #include "EnhancedInputComponent.h"
+#include "MainUI.h"
 #include "NiagaraFunctionLibrary.h"
 #include "PlayerAnim.h"
 #include "Blueprint/UserWidget.h"
@@ -184,6 +185,9 @@ void UPlayerFire::ChangeToGrenadeGun(const struct FInputActionValue& inputValue)
 	bUseGrenadeGun = true;
 	gunMeshComp->SetVisibility(true);
 	sniperGunComp->SetVisibility(false);
+
+	// UI에 총교체 시키기
+	me->mainUI->OnUseGrenadeGun(bUseGrenadeGun);
 }
 
 void UPlayerFire::ChangeToSniperGun(const struct FInputActionValue& inputValue)
@@ -191,6 +195,9 @@ void UPlayerFire::ChangeToSniperGun(const struct FInputActionValue& inputValue)
 	bUseGrenadeGun = false;
 	gunMeshComp->SetVisibility(false);
 	sniperGunComp->SetVisibility(true);
+
+	// UI에 총교체 시키기
+	me->mainUI->OnUseGrenadeGun(bUseGrenadeGun);
 }
 
 void UPlayerFire::SniperAim(const struct FInputActionValue& inputValue)
